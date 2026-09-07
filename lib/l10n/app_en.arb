@@ -1,0 +1,313 @@
+{
+  "appTitle": "Rosa",
+  "tabToday": "Today",
+  "tabCalendar": "Calendar",
+  "tabTrack": "Track",
+  "tabStats": "Analysis",
+  "tabMore": "More",
+
+  "loadFailed": "Failed to load: {error}",
+  "@loadFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "cancel": "Cancel",
+  "close": "Close",
+  "ok": "OK",
+  "delete": "Delete",
+  "import": "Import",
+  "save": "Save",
+  "nextStep": "Next",
+  "prevStep": "Back",
+  "confirm": "Confirm",
+
+  "currentCycleTitle": "Current Cycle",
+  "howAreYouToday": "How are you feeling today?",
+  "periodDayN": "Period · Day {n}",
+  "@periodDayN": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "yourNextPeriodIs": "Your next period is on",
+  "daysUntilNextPeriod": "days until your next period",
+  "possibleFertileDays": "Possible fertile days",
+  "daysCount": "{n, plural, one {{n} day} other {{n} days}}",
+  "@daysCount": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "backToTodayHint": "Tap empty ring to return to today",
+  "dayUnitShort": "day",
+  "predictedChip": "Predicted",
+  "confirmedChip": "Confirmed",
+
+  "predictedPeriodSubtitle": "±{n} days from last prediction (predicted)",
+  "@predictedPeriodSubtitle": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "ovulationSubtitle": "Today is the center of your fertile window (predicted)",
+  "fertileWindowSubtitleToday": "Ovulation expected today",
+  "fertileWindowSubtitleInDays": "Ovulation expected in {n} days",
+  "@fertileWindowSubtitleInDays": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "normalSubtitle": "{n} days until next period",
+  "@normalSubtitle": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+
+  "fertileWindowLabel": "Fertile window",
+  "predictedOvulationLabel": "Predicted ovulation day",
+  "fertileDisclaimer": "The fertile window includes the days before and the possible ovulation day. It is only an estimate and should not be used for contraception or trying to conceive.",
+
+  "prevMonth": "Previous month",
+  "nextMonth": "Next month",
+  "backToToday": "Back to today",
+  "legendPeriod": "Period",
+  "legendPredictedPeriod": "Predicted period",
+  "legendFertileWindow": "Fertile window",
+  "legendOvulation": "Ovulation",
+
+  "categoryPeriod": "Period",
+  "categorySymptoms": "Symptoms",
+  "categoryMood": "Mood",
+  "categorySex": "Sex",
+  "categoryMetrics": "Body metrics",
+  "categoryNote": "Daily note",
+
+  "categoryFilter": "Category filter",
+  "categoryFilterHint": "Turn categories on or off to filter your view. Hold and drag a category to reorder.",
+  "allCategories": "All categories",
+
+  "flowLight": "Light",
+  "flowMedium": "Medium",
+  "flowHeavy": "Heavy",
+  "flowVeryHeavy": "Very heavy",
+
+  "symptomAbdominalPain": "Abdominal pain",
+  "symptomHeadache": "Headache",
+  "symptomFatigue": "Fatigue",
+  "symptomBreastTenderness": "Breast tenderness",
+  "symptomMoodSwings": "Mood swings",
+  "symptomInsomnia": "Insomnia",
+  "symptomAcne": "Acne",
+  "symptomLowerBackPain": "Lower back pain",
+
+  "moodHappy": "Happy",
+  "moodCalm": "Calm",
+  "moodLow": "Low",
+  "moodIrritable": "Irritable",
+  "moodAnxious": "Anxious",
+  "moodSensitive": "Sensitive",
+  "moodTired": "Tired",
+
+  "sexProtected": "Protected sex",
+  "sexUnprotected": "Unprotected sex",
+  "sexWithdrawal": "Withdrawal",
+  "sexNoSex": "No sex today",
+  "sexOrgasm": "Orgasm",
+  "sexNoOrgasm": "No orgasm",
+  "sexFantasy": "Sexual fantasy",
+  "sexPainfulSex": "Painful sex",
+  "sexHighLibido": "High libido",
+  "sexLowLibido": "Low libido",
+  "sexMasturbation": "Masturbation",
+
+  "metricWeight": "Weight",
+  "metricTemperature": "Temperature",
+  "weightKg": "Weight kg",
+  "tempC": "Temperature ℃",
+
+  "noteHint": "Any other details to add today?",
+  "autoSaveHint": "Changes save instantly",
+  "allCategoriesOff": "All categories are off. Tap the filter icon to enable.",
+  "chooseYear": "Choose year",
+
+  "statsTitle": "Statistics",
+  "last6Cycles": "Last 6 cycles",
+  "avgCycle": "Average cycle",
+  "avgPeriod": "Average period",
+  "dayUnit": "days",
+  "cycleLengthTrend": "Cycle length trend",
+  "statsHint": "Tip: more data means more accurate predictions; log complete cycles.",
+  "statsEmpty": "Log 1–2 complete cycles to see trends",
+  "statsOverview": "Record overview",
+  "trackedDays": "Tracked days",
+  "periodDays": "Period days",
+  "symptomDays": "Symptom days",
+  "moodDays": "Mood days",
+  "sexDays": "Sex days",
+  "metricDays": "Metric days",
+  "symptomFrequency": "Frequent symptoms",
+  "moodDistribution": "Mood distribution",
+  "weightTrend": "Weight trend",
+  "tempTrend": "Temperature trend",
+  "noTrackingData": "No data yet",
+  "metricRangeStats": "Min {min} · Max {max} · Avg {avg}",
+  "@metricRangeStats": {
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" },
+      "avg": { "type": "String" }
+    }
+  },
+
+  "appearance": "Appearance",
+  "themeSystem": "Follow system",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "customizeTracking": "Customize tracking",
+  "customizeTrackingSubtitle": "Category switches and order",
+  "cyclePersonalization": "Cycle personalization",
+  "cyclePersonalizationSubtitle": "Ovulation / fertile window display",
+  "importData": "Import data",
+  "importDataSubtitle": "JSON merge & dedupe",
+  "autoBackup": "Auto backup",
+  "autoBackupSubtitle": "Silently export JSON on exit",
+  "backupDir": "Backup folder",
+  "backupDirNotSelected": "Not selected (tap to choose and authorize)",
+  "backupNow": "Back up now",
+  "exportJson": "Export JSON",
+  "exportJsonSubtitle": "Full data → clipboard",
+  "clearAllData": "Clear all data",
+  "privacyPolicy": "Privacy",
+  "privacyPolicySubtitle": "Local-first storage · export/delete anytime",
+  "language": "Language",
+  "languageSystem": "Follow system",
+  "languageZh": "简体中文",
+  "languageEn": "English",
+
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "exportSaved": "{label} saved",
+  "@exportSaved": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "exportSavedCount": "{count} in total",
+  "@exportSavedCount": {
+    "placeholders": { "count": { "type": "String" } }
+  },
+  "exportCopyHint": "Copy the content to send it to others.",
+  "shareSaveToSystem": "Share / Save to system",
+  "copyContent": "Copy content",
+  "copiedToClipboard": "Content copied to clipboard",
+  "exportShareText": "Period tracking data export ({label})",
+  "@exportShareText": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "importFromFile": "Import from file",
+  "importFromFileSubtitle": "Choose a local .json export file",
+  "pasteJson": "Paste JSON",
+  "pasteJsonSubtitle": "From clipboard or manual paste",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "importErrorJsonParse": "JSON parse failed. Paste a valid export file.",
+  "importErrorInvalidJson": "Invalid JSON format.",
+  "importErrorSchemaMismatch": "Schema version mismatch: import is {imported}, current is {current}",
+  "@importErrorSchemaMismatch": {
+    "placeholders": {
+      "imported": { "type": "String" },
+      "current": { "type": "String" }
+    }
+  },
+  "importErrorMissingData": "Missing data root node.",
+  "importErrorInvalidDate": "Unparseable date field.",
+  "importDedupeHint": "Merged by unique key; existing records are not overwritten.",
+  "pasteJsonHint": "Paste JSON…",
+  "importDone": "Import complete",
+  "importSummary": "{inserted} added · {skipped} skipped",
+  "@importSummary": {
+    "placeholders": {
+      "inserted": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+  "addedCount": "Added {n}",
+  "@addedCount": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "skippedCount": "Skipped {n}",
+  "@skippedCount": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "importSkippedHint": "Skipped = same unique key already exists locally and is kept as-is.",
+  "backupFailed": "Backup failed: {error}",
+  "@backupFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "unknownError": "Unknown error",
+  "backupDone": "Backup complete",
+  "backupShareText": "Period tracking backup",
+  "shareSaveAs": "Share / Save as",
+  "clearAllConfirmTitle": "Clear all data?",
+  "clearAllConfirmBody": "This deletes all period records, symptoms, moods and predictions on this device, and cannot be undone.",
+  "clearedAllData": "All data cleared",
+
+  "tablePeriodDays": "Period records",
+  "tableSymptoms": "Symptoms",
+  "tableBodyMetrics": "Body metrics",
+  "tableMoods": "Moods",
+  "tablePredictions": "Predictions",
+
+  "charsCount": "{n} chars",
+  "@charsCount": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+
+  "displaySection": "Display",
+  "showOvulation": "Show ovulation",
+  "showFertileWindow": "Show fertile window",
+  "restoreDefault": "Restore default",
+
+  "recordTitle": "Log",
+  "recordDate": "Record date",
+  "stepPeriod": "Period",
+  "stepFlow": "Flow",
+  "stepSymptoms": "Symptoms",
+  "stepMetrics": "Metrics",
+  "stepMood": "Mood",
+  "stepPeriodHint": "Are you on your period this day?",
+  "stepFlowHint": "How heavy is the bleeding?",
+  "stepSymptomsHint": "Which symptoms do you have?",
+  "stepMetricsHint": "Body metrics (optional)",
+  "stepMoodHint": "How do you feel?",
+  "yesPeriodToday": "Yes, period today",
+  "no": "No",
+  "weightKgOptional": "Weight (kg, optional)",
+  "tempCOptional": "Basal temperature (℃, optional)",
+  "recordSaved": "Record saved",
+
+  "recordFlowSpotting": "Spotting",
+  "recordFlowLight": "Light",
+  "recordFlowMedium": "Medium",
+  "recordFlowHeavy": "Heavy",
+
+  "accountTitle": "Sync & account",
+  "currentMode": "Current mode",
+  "localFreeMode": "Local mode · full features free",
+  "accountId": "Account ID",
+  "anonymousUser": "Anonymous user #{id}",
+  "@anonymousUser": {
+    "placeholders": { "id": { "type": "String" } }
+  },
+  "noLoginRequired": "No login required",
+  "accountPrivacyBody": "For privacy first, this version does not sync to the cloud. All period, symptom, mood and prediction data stays on this device. To migrate, use “Export JSON” then “Import data” on the new device.",
+  "accountMigrateHint": "To migrate, return to “More” and use “Export / Import”.",
+
+  "privacyTitle": "Privacy",
+  "privacyLocalTitle": "Local-first storage",
+  "privacyLocalBody": "All period, symptom, mood and prediction data stays only in this device's database. Nothing is uploaded, with no ad tracking or third-party sharing.",
+  "privacyEncryptedTitle": "Encrypted storage",
+  "privacyEncryptedBody": "The database is protected by an encryption scheme whose key is held in system secure storage (iOS Keychain / Android Keystore); day-to-day data is only decrypted on device.",
+  "privacyClearTitle": "Controlled deletion",
+  "privacyClearBody": "Permanently delete all local records under “Clear all data”. Deletion cannot be undone, so export a backup first.",
+  "privacyMigrateTitle": "Migrate anytime",
+  "privacyMigrateBody": "Export as JSON and save or share it, then import on a new device to merge, dedupe and restore.",
+
+  "placeholderModule": "The “{title}” module will be implemented in a later stage",
+  "@placeholderModule": {
+    "placeholders": { "title": { "type": "String" } }
+  }
+}
