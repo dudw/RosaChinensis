@@ -63,12 +63,14 @@ class DataTransferService {
 
   /// 全量 JSON（结构同导入，schema_version 对齐）。
   Future<Map<String, dynamic>> exportJson(int userId) async {
-    final periods = await _userRows(_db.periodDays, userId);
+    // 仅导出有实际跟踪内容的经期日（排除 isPeriod=false 且无流量、无备注的空记录）。
+    final periods = (await _userRows(_db.periodDays, userId))
+        .where(_hasTracking)
+        .toList();
     final symptoms = await _userRows(_db.symptomRecords, userId);
     final metrics = await _userRows(_db.bodyMetrics, userId);
     final moods = await _userRows(_db.moodRecords, userId);
     final sex = await _userRows(_db.sexRecords, userId);
-    final predictions = await _userRows(_db.predictionSnapshots, userId);
     return {
       'schema_version': _db.schemaVersion,
       'exported_at': DateTime.now().toIso8601String(),
@@ -78,10 +80,13 @@ class DataTransferService {
         'body_metrics': metrics,
         'mood_records': moods,
         'sex_records': sex,
-        'predictions': predictions,
       },
     };
   }
+
+  /// 是否有实际跟踪内容（预测快照不入导出，故这里只针对经期日）。
+  static bool _hasTracking(Map<String, dynamic> row) =>
+      row['isPeriod'] == true || row['flowLevel'] != null || row['note'] != null;
 
   /// 写入文件：JSON 全量导出。
   Future<ExportFile> exportJsonToFile(int userId) async {
@@ -383,10 +388,6 @@ class DataTransferService {
     } else if (table == _db.sexRecords) {
       list = Future.value(await (_db.select(_db.sexRecords)
             ..where((s) => s.userId.equals(userId)))
-          .get());
-    } else if (table == _db.predictionSnapshots) {
-      list = Future.value(await (_db.select(_db.predictionSnapshots)
-            ..where((p) => p.userId.equals(userId)))
           .get());
     } else {
       return [];

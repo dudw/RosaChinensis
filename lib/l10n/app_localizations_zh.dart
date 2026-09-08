@@ -59,6 +59,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get confirm => '确定';
 
   @override
+  String get pressAgainToExit => '再按一次退出';
+
+  @override
   String get currentCycleTitle => '当前生理周期';
 
   @override

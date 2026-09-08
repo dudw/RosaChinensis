@@ -57,7 +57,9 @@ class _TodayPageState extends State<TodayPage> {
         .difference(latestPeriodStart)
         .inDays
         .clamp(15, 40);
-    // 经期长度：优先用数据库已确认的连续天数，没有则默认 5
+    // 经期弧长度 = 从最近经期首日起"连续标记为经期"的天数。
+    // 只画用户实际标记的日子；无任何标记时为 0（红色弧消失），
+    // 不再回退默认 5，以免未记录的"今天"被标红。
     int periodLength;
     try {
       final confirmed = await repo.periodDaysByRange(
@@ -76,9 +78,9 @@ class _TodayPageState extends State<TodayPage> {
           break; // 中间有间断，停
         }
       }
-      periodLength = count >= 1 ? count : 5;
+      periodLength = count;
     } catch (_) {
-      periodLength = 5;
+      periodLength = 0;
     }
     return _TodayState(
       info: info,
@@ -191,7 +193,7 @@ class _TodayState {
   /// 周期长度（从预测服务反推，15-40 天）。
   final int cycleLength;
 
-  /// 已确认的经期天数（或默认 5）。
+  /// 已确认标记为经期的天数（无标记为 0）。
   final int periodLength;
 }
 
@@ -235,7 +237,7 @@ class _Ring extends StatefulWidget {
   /// 完整周期长度（nextPeriodStart - latestPeriodStart）。
   final int cycleLength;
 
-  /// 已确认经期长度（或默认 5）。
+  /// 已确认标记为经期的天数（无标记为 0，则红色弧不绘制）。
   final int periodLength;
 
   final bool showFertileIndicator;
@@ -370,7 +372,11 @@ class _RingState extends State<_Ring> {
                     progress: progress,
                     color: color,
                     track: track,
-                    periodRatio: periodLength / cycleLength,
+                    // 经期弧只画到"已标记的最后一天"，并让弧停在标记日与次日之间，
+                    // 避免圆头/取整让弧面多延伸到次日（如只记 4~7 号时擦到 8 号）。
+                    periodRatio: periodLength <= 0
+                        ? 0.0
+                        : ((periodLength - 0.5) / cycleLength).clamp(0.0, 1.0),
                     fertileStartRatio: fertileStartRatio,
                     fertileEndRatio: fertileEndRatio,
                     ovulationRatio: ovulationRatio,
@@ -705,7 +711,7 @@ class _RingPainter extends CustomPainter {
         ..color = AppColors.danger
         ..strokeWidth = stroke
         ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
+        ..strokeCap = StrokeCap.butt;
       canvas.drawArc(
         ring,
         startAngle,
@@ -742,30 +748,10 @@ class _RingPainter extends CustomPainter {
       }
     }
 
-    // 3) 进度弧（渐变，覆盖在底色之上）。
-    //    起点 = 经期结束位置（periodRatio），避免覆盖红色经期弧。
-    //    如果今日仍在经期（progress <= periodRatio），则不画（红色经期弧已承担视觉）。
-    final arcStart = periodRatio;
-    final arcEnd = progress.clamp(arcStart, 1.0);
-    if (arcEnd > arcStart) {
-      final activePaint = Paint()
-        ..shader = SweepGradient(
-          startAngle: startAngle + arcStart * 2 * math.pi,
-          endAngle: startAngle + arcEnd * 2 * math.pi,
-          colors: [color, color.withValues(alpha: 0.55)],
-        ).createShader(ring)
-        ..strokeWidth = stroke
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
-
-      canvas.drawArc(
-        ring,
-        startAngle + arcStart * 2 * math.pi,
-        (arcEnd - arcStart) * 2 * math.pi,
-        false,
-        activePaint,
-      );
-    }
+    // 3) 普通日进度弧已取消绘制（原先用普通日颜色/紫色描绘，与灰色轨道色差明显）。
+    //    现在普通日不额外上色，圆弧与底色轨道融为一体；今天的进度位置
+    //    仍由天数圆圈（跟随 progress）与锚点表达，不再依赖这段弧。
+    //    （color / progress 参数保留：shouldRepaint 仍以它们判断是否重绘。）
 
     // 4) 均匀分布的可点击锚点：统一灰色小点（phase 由 arc + 关键标记点表达）
     for (final a in anchors) {
@@ -935,7 +921,9 @@ Color _phaseColor(TodayPhase phase) => switch (phase) {
   TodayPhase.predictedPeriod => AppColors.danger.withValues(alpha: 0.7),
   TodayPhase.ovulation => AppColors.amber,
   TodayPhase.fertileWindow => AppColors.teal,
-  TodayPhase.normal => AppColors.brand,
+  // 普通日 = 中性灰（与未选中锚点的灰色一致），不再用品牌紫，
+  // 也让「经期结束→今天」的进度弧在普通日时显示为灰色。
+  TodayPhase.normal => const Color(0xFFBDBDBD),
 };
 
 /// 受孕期详情卡片。

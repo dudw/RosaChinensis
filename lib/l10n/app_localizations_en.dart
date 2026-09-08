@@ -59,6 +59,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get pressAgainToExit => 'Press again to exit';
+
+  @override
   String get currentCycleTitle => 'Current Cycle';
 
   @override

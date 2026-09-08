@@ -194,6 +194,12 @@ abstract class AppLocalizations {
   /// **'Confirm'**
   String get confirm;
 
+  /// No description provided for @pressAgainToExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Press again to exit'**
+  String get pressAgainToExit;
+
   /// No description provided for @currentCycleTitle.
   ///
   /// In en, this message translates to:

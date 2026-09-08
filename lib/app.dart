@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'core/i18n/locale_controller.dart';
 import 'core/theme/app_theme.dart';
@@ -81,6 +82,7 @@ class RootShell extends StatefulWidget {
 
 class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
   int _index = 0;
+  DateTime? _lastBackPressed;
 
   @override
   void initState() {
@@ -114,6 +116,25 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
     if (mounted) setState(() => _index = i);
   }
 
+  /// 返回键处理：非「今日」页先切回今日；「今日」页 2 秒内连按两次则退出。
+  void _handleBack() {
+    if (_index != 0) {
+      setState(() => _index = 0);
+      return;
+    }
+    final now = DateTime.now();
+    final last = _lastBackPressed;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      SystemNavigator.pop();
+      return;
+    }
+    _lastBackPressed = now;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.pressAgainToExit)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -125,39 +146,46 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
       SettingsPage(),
     ];
 
-    return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _onTab,
-        height: 72,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.water_drop_outlined),
-            selectedIcon: const Icon(Icons.water_drop),
-            label: l10n.tabToday,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.calendar_month_outlined),
-            selectedIcon: const Icon(Icons.calendar_month),
-            label: l10n.tabCalendar,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.add_circle_outline, size: 36),
-            selectedIcon: const Icon(Icons.add_circle, size: 40),
-            label: l10n.tabTrack,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.bar_chart_outlined),
-            selectedIcon: const Icon(Icons.bar_chart),
-            label: l10n.tabStats,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.more_horiz),
-            selectedIcon: const Icon(Icons.more_vert),
-            label: l10n.tabMore,
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        body: IndexedStack(index: _index, children: pages),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: _onTab,
+          height: 72,
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.water_drop_outlined),
+              selectedIcon: const Icon(Icons.water_drop),
+              label: l10n.tabToday,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.calendar_month_outlined),
+              selectedIcon: const Icon(Icons.calendar_month),
+              label: l10n.tabCalendar,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.add_circle_outline, size: 36),
+              selectedIcon: const Icon(Icons.add_circle, size: 40),
+              label: l10n.tabTrack,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.bar_chart_outlined),
+              selectedIcon: const Icon(Icons.bar_chart),
+              label: l10n.tabStats,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.more_horiz),
+              selectedIcon: const Icon(Icons.more_vert),
+              label: l10n.tabMore,
+            ),
+          ],
+        ),
       ),
     );
   }

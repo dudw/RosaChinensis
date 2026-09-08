@@ -20,6 +20,7 @@
   "nextStep": "Next",
   "prevStep": "Back",
   "confirm": "Confirm",
+  "pressAgainToExit": "Press again to exit",
 
   "currentCycleTitle": "Current Cycle",
   "howAreYouToday": "How are you feeling today?",

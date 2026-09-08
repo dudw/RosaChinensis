@@ -28,24 +28,38 @@ void main() {
   Future<String> exportJsonString(int userId) async =>
       const JsonEncoder.withIndent('  ').convert(await transfer.exportJson(userId));
 
-  test('导出 JSON 可原样回导（经期/症状/情绪/性生活/预测全表往返）', () async {
+  test('导出 JSON 可原样回导（经期/症状/情绪/性生活全表往返）', () async {
     // 造一份数据。
     await repo.upsertPeriodDay(userId: 1, date: DateTime(2026, 9, 1), flowLevel: 2);
     await repo.upsertSymptom(userId: 1, date: DateTime(2026, 9, 1), symptomType: '头痛');
     await repo.upsertMood(userId: 1, date: DateTime(2026, 9, 1), moodType: '平静');
     await repo.upsertSex(userId: 1, date: DateTime(2026, 9, 1), tag: 'protected');
-    await repo.upsertPrediction(userId: 1, event: 'nextPeriod', date: DateTime(2026, 9, 30));
 
     // 导出到另一用户，再导入回用户 1（应全部跳过，因为唯一键已存在）。
     final json = await exportJsonString(1);
     final report = await transfer.import(1, json);
 
     expect(report.totalInserted, 0);
-    expect(report.totalSkipped, 5);
+    expect(report.totalSkipped, 4);
     // 数据未被重复。
     expect(await db.select(db.periodDays).get(), hasLength(1));
     expect(await db.select(db.symptomRecords).get(), hasLength(1));
     expect(await db.select(db.sexRecords).get(), hasLength(1));
+  });
+
+  test('导出不包含空跟踪日与预测快照', () async {
+    // 空跟踪日（isPeriod=false 且无流量/备注）与预测快照都不应出现在导出中。
+    await repo.upsertPeriodDay(userId: 1, date: DateTime(2026, 9, 1), isPeriod: false);
+    await repo.upsertPeriodDay(userId: 1, date: DateTime(2026, 9, 2), flowLevel: 2);
+    await repo.upsertPrediction(userId: 1, event: 'nextPeriod', date: DateTime(2026, 9, 30));
+
+    final json = await exportJsonString(1);
+    final data = (jsonDecode(json)['data'] as Map<String, dynamic>);
+
+    expect(data.containsKey('predictions'), isFalse);
+    final periodDays = data['period_days'] as List;
+    expect(periodDays, hasLength(1));
+    expect((periodDays.single as Map)['isPeriod'], isTrue);
   });
 
   test('导入唯一键不冲突时新增，冲突时跳过不覆盖本地', () async {
