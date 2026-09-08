@@ -51,27 +51,6 @@ void main() {
     expect(rows.single.modelVersion, '1');
   });
 
-  test('周期统计：平均周期与平均经期持续', () async {
-    final base = DateTime(2026, 1, 1);
-    // 段1：1/1-1/5（5天），段2：1/30-2/3（5天），段3：3/1-3/5（5天）
-    for (final d in [0, 1, 2, 3, 4]) {
-      await repo.upsertPeriodDay(userId: 1, date: base.add(Duration(days: d)));
-    }
-    for (final d in [0, 1, 2, 3, 4]) {
-      // 1/30
-      await repo.upsertPeriodDay(
-          userId: 1, date: DateTime(2026, 1, 30).add(Duration(days: d)));
-    }
-    for (final d in [0, 1, 2, 3, 4]) {
-      await repo.upsertPeriodDay(
-          userId: 1, date: DateTime(2026, 3, 1).add(Duration(days: d)));
-    }
-
-    expect(await repo.averagePeriodLength(1), closeTo(5, 1e-9));
-    // 周期 1/1->1/30 = 29，1/30->3/1 = 30 → 平均 29.5
-    expect(await repo.averageCycleLength(1), closeTo(29.5, 1e-9));
-  });
-
   test('性生活标签按 (userId,date,tag) 唯一键去重，clearSexByDate 清空当天', () async {
     final date = DateTime(2026, 9, 5);
     await repo.upsertSex(userId: 1, date: date, tag: 'protected');

@@ -482,20 +482,6 @@ class RecordRepository {
     return durations;
   }
 
-  /// 平均周期长度（天）；无完整周期返回 null。
-  Future<double?> averageCycleLength(int userId) async {
-    final lens = await cycleLengths(userId);
-    if (lens.isEmpty) return null;
-    return lens.reduce((a, b) => a + b) / lens.length;
-  }
-
-  /// 平均经期持续（天）；无记录返回 null。
-  Future<double?> averagePeriodLength(int userId) async {
-    final durs = await periodDurations(userId);
-    if (durs.isEmpty) return null;
-    return durs.reduce((a, b) => a + b) / durs.length;
-  }
-
   /// ── 追踪统计（记录概览 / 频次 / 指标序列）──────────────────────────────
 
   /// 全历史各分类的记录天数概览。

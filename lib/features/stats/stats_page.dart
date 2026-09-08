@@ -70,9 +70,22 @@ class _StatsPageState extends State<StatsPage> {
     final lengths = await repo.cycleLengths(userId);
     final recent =
         lengths.length <= 6 ? lengths : lengths.sublist(lengths.length - 6);
+    // 平均周期与趋势条同口径：取最近【至多 6 个】周期的简单平均，
+    // 避免被更早、更长的历史周期拉高（如近期 27~29，却被早期 30+ 拉成 31.4）。
+    final avgCycle = recent.isEmpty
+        ? null
+        : recent.reduce((a, b) => a + b) / recent.length;
+    // 平均经期同样统一为近 6 段口径（与周期长度趋势一致）。
+    final durations = await repo.periodDurations(userId);
+    final recentDurations = durations.length <= 6
+        ? durations
+        : durations.sublist(durations.length - 6);
+    final avgPeriod = recentDurations.isEmpty
+        ? null
+        : recentDurations.reduce((a, b) => a + b) / recentDurations.length;
     return _StatsBody(
-      avgCycle: await repo.averageCycleLength(userId),
-      avgPeriod: await repo.averagePeriodLength(userId),
+      avgCycle: avgCycle,
+      avgPeriod: avgPeriod,
       cycleLengths: recent,
       summary: await repo.recordSummary(userId),
       symptoms: await repo.symptomFrequency(userId),
