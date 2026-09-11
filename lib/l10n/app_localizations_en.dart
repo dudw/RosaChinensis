@@ -474,25 +474,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get importFromFile => 'Import from file';
-
-  @override
-  String get importFromFileSubtitle => 'Choose a local .json export file';
-
-  @override
-  String get pasteJson => 'Paste JSON';
-
-  @override
-  String get pasteJsonSubtitle => 'From clipboard or manual paste';
-
-  @override
   String importFailed(String error) {
     return 'Import failed: $error';
   }
 
   @override
   String get importErrorJsonParse =>
-      'JSON parse failed. Paste a valid export file.';
+      'JSON parse failed. Select a valid export file.';
 
   @override
   String get importErrorInvalidJson => 'Invalid JSON format.';
@@ -507,13 +495,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importErrorInvalidDate => 'Unparseable date field.';
-
-  @override
-  String get importDedupeHint =>
-      'Merged by unique key; existing records are not overwritten.';
-
-  @override
-  String get pasteJsonHint => 'Paste JSON…';
 
   @override
   String get importDone => 'Import complete';

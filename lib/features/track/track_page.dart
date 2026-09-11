@@ -604,6 +604,12 @@ class _DayDot extends StatelessWidget {
                 border: isToday && !isSelected
                     ? Border.all(color: brandColor, width: 1.5)
                     : null,
+                boxShadow: isSelected
+                    ? AppShadows.accent(
+                        Theme.of(context).brightness,
+                        brandColor,
+                      )
+                    : null,
               ),
               child: Text(
                 '${date.day}',
@@ -656,6 +662,7 @@ class _FlowCard extends StatelessWidget {
     ];
     return _Section(
       title: l10n.categoryPeriod,
+      accentColor: AppColors.danger,
       child: Row(
         children: [
           for (var i = 0; i < labels.length; i++)
@@ -686,6 +693,7 @@ class _SymptomCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return _Section(
       title: l10n.categorySymptoms,
+      accentColor: AppColors.amber,
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
@@ -717,6 +725,7 @@ class _MoodCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return _Section(
       title: l10n.categoryMood,
+      accentColor: AppColors.teal,
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
@@ -753,6 +762,7 @@ class _SexCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return _Section(
       title: l10n.categorySex,
+      accentColor: AppColors.teal,
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
@@ -790,6 +800,7 @@ class _MetricCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return _Section(
       title: l10n.categoryMetrics,
+      accentColor: AppColors.brand,
       child: Row(
         children: [
           Expanded(
@@ -836,6 +847,7 @@ class _NoteCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return _Section(
       title: l10n.categoryNote,
+      accentColor: AppColors.brand,
       child: TextField(
         controller: controller,
         onChanged: (_) => onChanged(),
@@ -850,23 +862,55 @@ class _NoteCard extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  const _Section({required this.title, required this.child, this.accentColor});
   final String title;
   final Widget child;
+
+  /// 分类语义色，画在卡片左侧 4px 色条上。null = 无色条。
+  final Color? accentColor;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: BoxDecoration(
+        color: t.cardTheme.color,
+        borderRadius: BorderRadius.circular(AppRadius.l),
+        border: Border.all(
+          color: t.brightness == Brightness.dark
+              ? Colors.white12
+              : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+      ),
+      // 裁掉色条超出圆角的部分。
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        // IntrinsicHeight 是必须的：本卡片位于 ListView（高度无界）中，
+        // Row 的 stretch 在无界高度下会把子项撑成无限高，
+        // 导致 SliverList 无法布局后续卡片（只剩第一张可见）。
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(title, style: t.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 12),
-            child,
+            if (accentColor != null)
+              Container(width: 4, color: accentColor),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: t.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 12),
+                    child,
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -906,17 +950,24 @@ class _IconTile extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(14),
             color: selected ? t.brightness.softBg(color, lightAlpha: 0.12, darkAlpha: 0.22) : null,
+            boxShadow: selected ? AppShadows.accent(t.brightness, color) : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: selected ? color : t.colorScheme.outline, size: 22),
               const SizedBox(height: 4),
-              Text(label,
-                  style: TextStyle(
-                    color: selected ? color : null,
-                    fontSize: 12,
-                  )),
+              // maxLines 防止长标签（如英文多行换行）撑爆固定高格子。
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: selected ? color : null,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ),
@@ -955,6 +1006,7 @@ class _ChipTile extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(20),
           color: selected ? t.brightness.softBg(color, lightAlpha: 0.12, darkAlpha: 0.22) : null,
+          boxShadow: selected ? AppShadows.accent(t.brightness, color) : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

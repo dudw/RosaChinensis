@@ -27,6 +27,103 @@ abstract final class AppColors {
   static const Color predictedDark = Color(0xFF2E284A);
 }
 
+/// 渐变 Token（PRD 17.2 视觉升级）。
+/// 所有渐变以「同色系深→浅」或「品牌→语义」过渡，保证视觉一致。
+abstract final class AppGradients {
+  AppGradients._();
+
+  /// 品牌主渐变（紫罗兰→柔紫），用于按钮、标题、进度弧。
+  static const LinearGradient brand = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF7B6CF6), AppColors.brand],
+  );
+
+  /// 经期渐变（深红→暖红），用于经期弧、经期标记。
+  static const LinearGradient period = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFEF4F5B), AppColors.danger],
+  );
+
+  /// 排卵渐变（琥珀→暖橙）。
+  static const LinearGradient ovulation = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFEFA856), AppColors.amber],
+  );
+
+  /// 受孕期渐变（青绿→深青）。
+  static const LinearGradient fertile = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF3FB3A4), AppColors.teal],
+  );
+
+  /// 折线图下方填充渐变（语义色 → 透明），垂直方向。
+  static LinearGradient chartFill(Color base) => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [base.withValues(alpha: 0.35), base.withValues(alpha: 0.0)],
+      );
+
+  /// 趋势条垂直渐变（语义色 → 浅）。
+  static LinearGradient barVertical(Color base) => LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: [base, base.withValues(alpha: 0.55)],
+      );
+}
+
+/// 柔光阴影 Token：用于关键卡片的「浮起」质感。
+/// 深色模式下阴影极轻（深底上重阴影会脏），仅留细微边光。
+abstract final class AppShadows {
+  AppShadows._();
+
+  /// 浮起卡片阴影（浅色）。
+  static List<BoxShadow> card(Brightness b) => b == Brightness.dark
+      ? []
+      : [
+          BoxShadow(
+            color: AppColors.brand.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ];
+
+  /// 强调元素阴影（如选中态、主按钮）。
+  static List<BoxShadow> accent(Brightness b, Color c) => b == Brightness.dark
+      ? []
+      : [
+          BoxShadow(
+            color: c.withValues(alpha: 0.30),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ];
+
+  /// 圆环天数小圆圈的轻微浮起。
+  static List<BoxShadow> dot(Brightness b) => b == Brightness.dark
+      ? []
+      : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ];
+}
+
+/// 圆角 Token：统一全 app 的圆角节奏（小=8 / 中=14 / 大=20 / 极大=28）。
+abstract final class AppRadius {
+  AppRadius._();
+  static const double xs = 8;
+  static const double s = 12;
+  static const double m = 14;
+  static const double l = 20;
+  static const double xl = 28;
+}
+
 /// 语义色的深浅模式感知工具。
 /// 给定 [Brightness]，返回「语义色块的最佳前景色」或「半透明背景色」。
 extension SemanticColor on Brightness {
@@ -77,18 +174,47 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(64, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
+          elevation: 0,
+          shadowColor: AppColors.brand.withValues(alpha: isDark ? 0 : 0.30),
         ),
       ),
       cardTheme: CardThemeData(
         color: isDark ? AppColors.neutralDarkCard : AppColors.neutralCard,
         elevation: 0,
+        shadowColor: AppColors.brand.withValues(alpha: 0.06),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.l),
           side: BorderSide(
-            color: isDark ? Colors.white12 : Colors.black12,
+            color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
             width: 1,
           ),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: isDark ? AppColors.neutralDarkBg : AppColors.neutralLight,
+        indicatorColor: AppColors.brand.withValues(alpha: isDark ? 0.30 : 0.14),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected
+                ? AppColors.brand
+                : (isDark ? Colors.white70 : Colors.black54),
+          );
+        }),
+      ),
+      appBarTheme: AppBarTheme(
+        centerTitle: true,
+        backgroundColor: isDark ? AppColors.neutralDarkBg : AppColors.neutralLight,
+        scrolledUnderElevation: 0,
+        titleTextStyle: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

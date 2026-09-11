@@ -16,8 +16,9 @@ import '../track/track_page.dart';
 /// 日历页：垂直无限滚动月份视图。
 ///
 /// - 上下滑动可浏览任意月份（基准月 +- 120 年范围），无月份数量限制。
-/// - 顶部 AppBar 左右箭头每次翻动 ±3 个月，支持平滑定位；
-///   "回到今天" 一键滚回本月。
+/// - 进入时本月显示在屏幕最下方，上滑可看以前/未来的月份。
+/// - 标题栏显示中心月份，点击弹出「选择年月」对话框跳转（可选范围到当月为止）；
+///   "回到今天" 一键回到本月（同样置底）。
 /// - 今天蓝框高亮，经期/预测/排卵标记着色；点击某一天打开该日期跟踪页。
 /// - 标记数据按需加载：滑到哪个月份就加载其 ±1 个月范围，避免一次取太多。
 class CalendarPage extends StatefulWidget {
@@ -48,8 +49,8 @@ class _CalendarPageState extends State<CalendarPage> {
   /// 用于 ScrollController 初始定位和箭头平滑滚动的粗略换算。
   static const double _kAvgMonthHeight = 390.0;
 
-  /// ScrollController 初始 offset 设为本月 index（0）对应的粗略位置，
-  /// 让列表首屏就落在本月附近，用户可自由上下滑动。
+  /// ScrollController 初始 offset 设在本月（index 0）顶部附近，
+  /// 首帧后再用 [_jumpToBottom] 把本月定位到屏幕底部（见 [_initialJump]）。
   final ScrollController _scroll = ScrollController(
     initialScrollOffset: kMonthRange * _kAvgMonthHeight,
   );
@@ -73,6 +74,13 @@ class _CalendarPageState extends State<CalendarPage> {
     _marks = _loadRange(-1, 1);
     AppSettingsController.instance.addListener(_onSettingsChanged);
     _scroll.addListener(_onScroll);
+
+    // 进入后把本月定位到屏幕底部（若 ListView 尚未挂载会逐帧重试）。
+    _initialJump();
+  }
+
+  void _initialJump() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToBottom(0));
   }
 
   @override
@@ -219,14 +227,65 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  /// 平滑滚动到指定月份 index。
-  Future<void> _animateTo(int targetIndex) async {
-    if (!_scroll.hasClients) return;
-    final targetOffset = (targetIndex + kMonthRange) * _kAvgMonthHeight;
-    await _scroll.animateTo(
-      targetOffset.clamp(0.0, _scroll.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
+  /// 让指定月份显示在屏幕底部（若目标位置超出列表末尾则 clamp 到最底，
+  /// 此时该月会落在列表顶部附近）。
+  /// [animate] 为 true 时平滑滚动；否则直接跳转。
+  Future<void> _jumpToBottom(int index, {bool animate = false}) async {
+    if (!_scroll.hasClients) {
+      // ListView 尚未挂载（可能在加载 loading 态），下帧重试。
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _jumpToBottom(index, animate: animate),
+      );
+      return;
+    }
+    final vh = _scroll.position.viewportDimension;
+    // 让 index 月的块底边刚好贴住屏幕底部。
+    final targetOffset =
+        (index + kMonthRange) * _kAvgMonthHeight + _kAvgMonthHeight - vh;
+    final max = _scroll.position.maxScrollExtent;
+    final clamped = targetOffset.clamp(0.0, max).toDouble();
+    if (animate) {
+      await _scroll.animateTo(
+        clamped,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scroll.jumpTo(clamped);
+    }
+  }
+
+  /// 弹出「选择年月」对话框，选中年月后滚到该月（置底）。
+  /// 有追踪记录的月份会在格子上以小圆点标记。
+  Future<void> _pickMonth() async {
+    final now = DateTime.now();
+    final maxMonth = DateTime(now.year, now.month, 1);
+    final minYear = _MonthPickerDialog._kMonthPickerMinYear;
+    // 加载全部记录日期，折叠成「年份-月份」集合作为标记。
+    final userId = await getIt<CurrentUser>().id();
+    final repo = getIt<RecordRepository>();
+    final recordDates = await repo.datesWithRecords(
+      userId,
+      from: DateTime(minYear, 1, 1),
+      to: maxMonth,
+    );
+    final markedMonths = recordDates
+        .map((d) => '${d.year}-${d.month}')
+        .toSet();
+    if (!mounted) return;
+
+    final target = await showDialog<DateTime>(
+      context: context,
+      builder: (_) => _MonthPickerDialog(
+        initial: _monthAt(_currentCenterIndex()),
+        maxMonth: maxMonth,
+        markedMonths: markedMonths,
+      ),
+    );
+    if (target == null || !mounted) return;
+    _jumpToBottom(
+      _indexOf(DateTime(target.year, target.month, 1)),
+      animate: true,
     );
   }
 
@@ -246,32 +305,37 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final now = DateTime.now();
-    final nowIndex = _indexOf(DateTime(now.year, now.month, 1));
     final centerIndex = _currentCenterIndex();
     final centerMonth = _monthAt(centerIndex);
-    final showToday = centerIndex == nowIndex;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(showToday
-            ? l10n.tabCalendar
-            : DateFormat.yMMMM(dateLocale(context)).format(centerMonth)),
+        title: InkWell(
+          onTap: _pickMonth,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat.yMMMM(dateLocale(context)).format(centerMonth),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_drop_down, size: 20),
+              ],
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            tooltip: l10n.prevMonth,
-            onPressed: () => _animateTo(centerIndex - 1),
-          ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            tooltip: l10n.nextMonth,
-            onPressed: () => _animateTo(centerIndex + 1),
-          ),
           IconButton(
             icon: const Icon(Icons.today),
             tooltip: l10n.backToToday,
-            onPressed: () => _animateTo(0),
+            onPressed: () => _jumpToBottom(0, animate: true),
           ),
         ],
       ),
@@ -367,8 +431,9 @@ class _MonthBlock extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
               DateFormat.yMMMM(dateLocale(context)).format(month),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.brand,
                   ),
               textAlign: TextAlign.center,
             ),
@@ -463,6 +528,12 @@ class _DayCell extends StatelessWidget {
     }
 
     if (isToday) {
+      // 今天若已是经期等彩色态，仅加 brand 描边；
+      // 否则用 brand 半透明填充，让今日格子更突出。
+      if (m == _Mark.blank) {
+        bg = brightness.softBg(AppColors.brand);
+        fg = AppColors.brand;
+      }
       border = Border.all(color: AppColors.brand, width: 1.8);
     }
 
@@ -536,6 +607,9 @@ class _LegendBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: t.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.l),
+        ),
         border: Border(
           top: BorderSide(color: t.colorScheme.outlineVariant),
         ),
@@ -560,12 +634,12 @@ class _LegendItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 14,
-          height: 14,
+          width: 12,
+          height: 12,
           margin: const EdgeInsets.only(right: 6),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(4),
+            shape: BoxShape.circle,
           ),
         ),
         Text(
@@ -573,6 +647,176 @@ class _LegendItem extends StatelessWidget {
           style: t.textTheme.bodySmall,
         ),
       ],
+    );
+  }
+}
+
+/// 「选择年月」对话框：年份用左右箭头切换，下方 1~12 月宫格点选。
+/// 可选范围下限为 [_kMonthPickerMinYear]，上限为 [maxMonth]（即当月），
+/// 超过当月的月份禁用。有追踪记录的月份在格子右上角画小圆点。
+class _MonthPickerDialog extends StatefulWidget {
+  const _MonthPickerDialog({
+    required this.initial,
+    required this.maxMonth,
+    this.markedMonths = const {},
+  });
+
+  /// 年份可选下限。
+  static const int _kMonthPickerMinYear = 2000;
+
+  /// 当前中心月，用作初始年份与高亮。
+  final DateTime initial;
+
+  /// 可选的最大月份（当月）。
+  final DateTime maxMonth;
+
+  /// 有追踪记录的月份集合，元素格式 `yyyy-M`（如 `2026-9`）。
+  final Set<String> markedMonths;
+
+  @override
+  State<_MonthPickerDialog> createState() => _MonthPickerDialogState();
+}
+
+class _MonthPickerDialogState extends State<_MonthPickerDialog> {
+  // 年份可选下限（与 widget 静态常量保持一致）。
+  static const int _minYear = _MonthPickerDialog._kMonthPickerMinYear;
+
+  late int _year;
+
+  @override
+  void initState() {
+    super.initState();
+    _year = widget.initial.year.clamp(_minYear, widget.maxMonth.year);
+  }
+
+  void _changeYear(int delta) {
+    setState(() {
+      _year = (_year + delta).clamp(_minYear, widget.maxMonth.year);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    final locale = dateLocale(context);
+    final canPrev = _year > _minYear;
+    final canNext = _year < widget.maxMonth.year;
+    final isMaxYear = _year >= widget.maxMonth.year;
+
+    return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+      contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      title: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: canPrev ? () => _changeYear(-1) : null,
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                '$_year',
+                style: t.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: canNext ? () => _changeYear(1) : null,
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 320,
+        child: GridView.count(
+          shrinkWrap: true,
+          crossAxisCount: 3,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 1.7,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            for (var m = 1; m <= 12; m++)
+              _monthCell(locale, DateTime(_year, m, 1), isMaxYear),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _monthCell(String locale, DateTime month, bool isMaxYear) {
+    final t = Theme.of(context);
+    final enabled = !month.isAfter(widget.maxMonth);
+    final isSelected = month.year == widget.initial.year &&
+        month.month == widget.initial.month &&
+        enabled;
+    final hasRecord =
+        widget.markedMonths.contains('${month.year}-${month.month}');
+    final bg = isSelected
+        ? AppColors.brand
+        : enabled
+            ? t.colorScheme.surfaceContainerHighest
+            : t.colorScheme.surfaceContainerHighest
+                .withValues(alpha: 0.35);
+    final fg = isSelected
+        ? Colors.white
+        : enabled
+            ? t.colorScheme.onSurface
+            : t.colorScheme.outline.withValues(alpha: 0.5);
+    // 有记录标记点的颜色：选中格用白，启用格用品牌色，禁用格淡化。
+    final dotColor = isSelected
+        ? Colors.white
+        : enabled
+            ? AppColors.brand
+            : t.colorScheme.outline.withValues(alpha: 0.5);
+
+    return InkWell(
+      onTap: enabled
+          ? () => Navigator.of(context).pop(month)
+          : null,
+      borderRadius: BorderRadius.circular(AppRadius.s),
+      child: Container(
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(AppRadius.s),
+          boxShadow: isSelected
+              ? AppShadows.accent(t.brightness, AppColors.brand)
+              : null,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              DateFormat('MMM', locale).format(month),
+              style: TextStyle(
+                color: fg,
+                fontWeight:
+                    isSelected || (isMaxYear && month.month == widget.maxMonth.month)
+                        ? FontWeight.w700
+                        : null,
+              ),
+            ),
+            // 右上角小圆点：标记该月有追踪记录（常用提示点样式）。
+            if (hasRecord)
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected
+                        ? [BoxShadow(color: Colors.black26, blurRadius: 2)]
+                        : null,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

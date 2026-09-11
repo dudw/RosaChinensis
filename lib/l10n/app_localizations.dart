@@ -956,30 +956,6 @@ abstract class AppLocalizations {
   /// **'Period tracking data export ({label})'**
   String exportShareText(String label);
 
-  /// No description provided for @importFromFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Import from file'**
-  String get importFromFile;
-
-  /// No description provided for @importFromFileSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose a local .json export file'**
-  String get importFromFileSubtitle;
-
-  /// No description provided for @pasteJson.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste JSON'**
-  String get pasteJson;
-
-  /// No description provided for @pasteJsonSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'From clipboard or manual paste'**
-  String get pasteJsonSubtitle;
-
   /// No description provided for @importFailed.
   ///
   /// In en, this message translates to:
@@ -989,7 +965,7 @@ abstract class AppLocalizations {
   /// No description provided for @importErrorJsonParse.
   ///
   /// In en, this message translates to:
-  /// **'JSON parse failed. Paste a valid export file.'**
+  /// **'JSON parse failed. Select a valid export file.'**
   String get importErrorJsonParse;
 
   /// No description provided for @importErrorInvalidJson.
@@ -1015,18 +991,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unparseable date field.'**
   String get importErrorInvalidDate;
-
-  /// No description provided for @importDedupeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Merged by unique key; existing records are not overwritten.'**
-  String get importDedupeHint;
-
-  /// No description provided for @pasteJsonHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste JSON…'**
-  String get pasteJsonHint;
 
   /// No description provided for @importDone.
   ///

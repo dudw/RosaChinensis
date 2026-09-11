@@ -138,6 +138,7 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final t = Theme.of(context);
     final pages = [
       TodayPage(),
       CalendarPage(),
@@ -157,35 +158,77 @@ class _RootShellState extends State<RootShell> with WidgetsBindingObserver {
         bottomNavigationBar: NavigationBar(
           selectedIndex: _index,
           onDestinationSelected: _onTab,
-          height: 72,
+          height: 80,
           destinations: [
             NavigationDestination(
               icon: const Icon(Icons.water_drop_outlined),
-              selectedIcon: const Icon(Icons.water_drop),
+              selectedIcon: Icon(Icons.water_drop, color: AppColors.brand),
               label: l10n.tabToday,
             ),
             NavigationDestination(
               icon: const Icon(Icons.calendar_month_outlined),
-              selectedIcon: const Icon(Icons.calendar_month),
+              selectedIcon: Icon(Icons.calendar_month, color: AppColors.brand),
               label: l10n.tabCalendar,
             ),
             NavigationDestination(
-              icon: const Icon(Icons.add_circle_outline, size: 36),
-              selectedIcon: const Icon(Icons.add_circle, size: 40),
+              icon: const Icon(Icons.add_circle_outline, size: 34),
+              selectedIcon: _FloatingAddIcon(
+                color: AppColors.brand,
+                gradient: AppGradients.brand,
+                isDark: t.brightness == Brightness.dark,
+              ),
               label: l10n.tabTrack,
             ),
             NavigationDestination(
               icon: const Icon(Icons.bar_chart_outlined),
-              selectedIcon: const Icon(Icons.bar_chart),
+              selectedIcon: Icon(Icons.bar_chart, color: AppColors.brand),
               label: l10n.tabStats,
             ),
             NavigationDestination(
               icon: const Icon(Icons.more_horiz),
-              selectedIcon: const Icon(Icons.more_vert),
+              selectedIcon: Icon(Icons.more_vert, color: AppColors.brand),
               label: l10n.tabMore,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 浮起式 + 号：品牌渐变圆形背景 + 柔光阴影，模拟 FAB 浮起感。
+class _FloatingAddIcon extends StatelessWidget {
+  const _FloatingAddIcon({
+    required this.color,
+    required this.gradient,
+    required this.isDark,
+  });
+
+  final Color color;
+  final Gradient gradient;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(0, -4),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          shape: BoxShape.circle,
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.40),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

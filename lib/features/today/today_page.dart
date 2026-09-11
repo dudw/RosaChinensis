@@ -415,12 +415,22 @@ class _RingState extends State<_Ring> {
                   ),
                   if (bigDate != null) ...[
                     const SizedBox(height: 4),
-                    Text(
-                      bigDate,
-                      textAlign: TextAlign.center,
-                      style: t.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: color,
+                    ShaderMask(
+                      shaderCallback: (rect) => LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          color,
+                          Color.lerp(color, Colors.black, 0.18) ?? color,
+                        ],
+                      ).createShader(rect),
+                      blendMode: BlendMode.srcIn,
+                      child: Text(
+                        bigDate,
+                        textAlign: TextAlign.center,
+                        style: t.textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ],
@@ -481,6 +491,7 @@ class _RingState extends State<_Ring> {
                       color: t.colorScheme.outlineVariant,
                       width: 1,
                     ),
+                    boxShadow: AppShadows.dot(t.brightness),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -705,10 +716,10 @@ class _RingPainter extends CustomPainter {
     // 1) 底色圈
     canvas.drawCircle(center, radius - stroke / 2, trackPaint);
 
-    // 1.5) 经期弧段（danger 红色，固定位置 0 ~ periodRatio）
+    // 1.5) 经期弧段（danger 渐变红，固定位置 0 ~ periodRatio）
     if (periodRatio > 0) {
       final periodPaint = Paint()
-        ..color = AppColors.danger
+        ..shader = AppGradients.period.createShader(ring)
         ..strokeWidth = stroke
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.butt;
@@ -753,7 +764,9 @@ class _RingPainter extends CustomPainter {
     //    仍由天数圆圈（跟随 progress）与锚点表达，不再依赖这段弧。
     //    （color / progress 参数保留：shouldRepaint 仍以它们判断是否重绘。）
 
-    // 4) 均匀分布的可点击锚点：统一灰色小点（phase 由 arc + 关键标记点表达）
+    // 4) 均匀分布的可点击锚点：默认灰色小圆点（phase 由 arc + 关键标记点表达）；
+    //    经期日期（红色弧段上的已确认经期日）改用圆角矩形标记，
+    //    与其余日期的圆点区分开，读起来更像"日期格子"。
     for (final a in anchors) {
       final ratio = a.ratio;
       final isSelected =
@@ -767,15 +780,38 @@ class _RingPainter extends CustomPainter {
       final dx = center.dx + (radius - stroke / 2) * math.cos(angle);
       final dy = center.dy + (radius - stroke / 2) * math.sin(angle);
 
-      canvas.drawCircle(
-        Offset(dx, dy),
-        dotR,
-        Paint()
-          ..color = dotColor
-          ..style = PaintingStyle.fill,
-      );
+      final markerPaint = Paint()
+        ..color = dotColor
+        ..style = PaintingStyle.fill;
+
+      if (a.phase == TodayPhase.period) {
+        // 经期日期：圆角矩形（比圆点略大，更醒目）。
+        final side = dotR * 2 + 3;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: Offset(dx, dy),
+              width: side,
+              height: side,
+            ),
+            const Radius.circular(3),
+          ),
+          markerPaint,
+        );
+      } else {
+        canvas.drawCircle(Offset(dx, dy), dotR, markerPaint);
+      }
 
       if (isSelected) {
+        // 柔光外圈（品牌色半透明，模拟发光）
+        canvas.drawCircle(
+          Offset(dx, dy),
+          dotR + 6,
+          Paint()
+            ..color = AppColors.brand.withValues(alpha: 0.20)
+            ..style = PaintingStyle.fill,
+        );
+        // 白色描边强化选中态
         canvas.drawCircle(
           Offset(dx, dy),
           dotR + 2.5,
@@ -819,6 +855,14 @@ class _RingPainter extends CustomPainter {
     const stroke = 44.0;
     final dx = center.dx + (ringRadius - stroke / 2) * math.cos(angle);
     final dy = center.dy + (ringRadius - stroke / 2) * math.sin(angle);
+    // 柔光外圈
+    canvas.drawCircle(
+      Offset(dx, dy),
+      dotR + 4,
+      Paint()
+        ..color = color.withValues(alpha: 0.25)
+        ..style = PaintingStyle.fill,
+    );
     canvas.drawCircle(
       Offset(dx, dy),
       dotR,
@@ -900,17 +944,23 @@ class _PhaseHint extends StatelessWidget {
         l10n.normalSubtitle(info.nextPeriodStart.difference(now).inDays),
       TodayPhase.period => '',
     };
-    return Card(
-      color: color.withValues(alpha: bgAlpha),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Icon(Icons.insights_outlined, color: color),
-            const SizedBox(width: 12),
-            Expanded(child: Text(subtitle, style: t.textTheme.bodyMedium)),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: bgAlpha),
+        borderRadius: BorderRadius.circular(AppRadius.l),
+        border: Border.all(
+          color: color.withValues(
+            alpha: t.brightness == Brightness.dark ? 0.35 : 0.18,
+          ),
         ),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Icon(Icons.insights_outlined, color: color),
+          const SizedBox(width: 12),
+          Expanded(child: Text(subtitle, style: t.textTheme.bodyMedium)),
+        ],
       ),
     );
   }
@@ -946,58 +996,64 @@ class _FertileInfo extends StatelessWidget {
     final df = DateFormat.MMMd(dateLocale(context));
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Card(
-        color: AppColors.teal.withValues(
-          alpha: t.brightness == Brightness.dark ? 0.18 : 0.10,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome,
-                    color: AppColors.teal,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.possibleFertileDays,
-                    style: t.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.teal,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (showFertile) ...[
-                _InfoRow(
-                  label: l10n.fertileWindowLabel,
-                  value:
-                      '${df.format(info.fertileStart)} – ${df.format(info.fertileEnd)}',
-                  color: AppColors.teal,
-                ),
-                const SizedBox(height: 8),
-              ],
-              if (showOvulation) ...[
-                _InfoRow(
-                  label: l10n.predictedOvulationLabel,
-                  value: df.format(info.ovulation),
-                  color: AppColors.amber,
-                ),
-                const SizedBox(height: 8),
-              ],
-              Text(
-                l10n.fertileDisclaimer,
-                style: t.textTheme.bodySmall?.copyWith(
-                  color: t.colorScheme.outline,
-                ),
-              ),
-            ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.teal.withValues(
+            alpha: t.brightness == Brightness.dark ? 0.18 : 0.10,
           ),
+          borderRadius: BorderRadius.circular(AppRadius.l),
+          border: Border.all(
+            color: AppColors.teal.withValues(
+              alpha: t.brightness == Brightness.dark ? 0.35 : 0.18,
+            ),
+          ),
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.auto_awesome,
+                  color: AppColors.teal,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.possibleFertileDays,
+                  style: t.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.teal,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (showFertile) ...[
+              _InfoRow(
+                label: l10n.fertileWindowLabel,
+                value:
+                    '${df.format(info.fertileStart)} – ${df.format(info.fertileEnd)}',
+                color: AppColors.teal,
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (showOvulation) ...[
+              _InfoRow(
+                label: l10n.predictedOvulationLabel,
+                value: df.format(info.ovulation),
+                color: AppColors.amber,
+              ),
+              const SizedBox(height: 8),
+            ],
+            Text(
+              l10n.fertileDisclaimer,
+              style: t.textTheme.bodySmall?.copyWith(
+                color: t.colorScheme.outline,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../app.dart';
 import '../../core/di/injection.dart';
 import '../../core/i18n/locale_controller.dart';
+import '../../core/theme/app_theme.dart';
 import '../../data/auto_backup_controller.dart';
 import '../../data/current_user.dart';
 import '../../data/data_transfer_service.dart';
@@ -24,6 +25,18 @@ class SettingsPage extends StatefulWidget {
   @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
+
+/// 设置页统一的图标徽章：圆形彩色背景 + 同色图标。
+/// 用于替换裸 Icon 让设置项更有视觉层级。
+Widget _iconBadge(IconData icon, Color color) => Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: color, size: 20),
+    );
 
 class _SettingsPageState extends State<SettingsPage> {
   Future<void> _exportJson() => _exportToFile('JSON', (s, u) => s.exportJsonToFile(u));
@@ -107,37 +120,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final userId = await getIt<CurrentUser>().id();
     if (!mounted) return;
 
-    // 方式选择：从文件导入 / 直接粘贴。
-    final source = await showModalBottomSheet<String>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.folder_open),
-              title: Text(l10n.importFromFile),
-              subtitle: Text(l10n.importFromFileSubtitle),
-              onTap: () => Navigator.pop(ctx, 'file'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.content_paste),
-              title: Text(l10n.pasteJson),
-              subtitle: Text(l10n.pasteJsonSubtitle),
-              onTap: () => Navigator.pop(ctx, 'paste'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null || !mounted) return;
-
-    final String? input;
-    if (source == 'file') {
-      input = await _pickImportFile();
-    } else {
-      input = await _pasteImport();
-    }
+    // 唯一导入方式：从本地 .json 文件导入。
+    final input = await _pickImportFile();
     if (input == null || input.trim().isEmpty || !mounted) return;
 
     final msg = ScaffoldMessenger.of(context);
@@ -192,51 +176,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     if (file == null) return null;
     return file.readAsString();
-  }
-
-  /// 粘贴 JSON（预填剪贴板内容方便直接导入）。
-  Future<String?> _pasteImport() async {
-    final l10n = AppLocalizations.of(context);
-    var prefill = '';
-    try {
-      prefill = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
-    } catch (_) {}
-    if (!mounted) return null;
-
-    final controller = TextEditingController(text: prefill);
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.pasteJson),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.importDedupeHint),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              maxLines: 8,
-              minLines: 4,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                hintText: l10n.pasteJsonHint,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: Text(l10n.import),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _showImportReport(ImportReport report) async {
@@ -471,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: AnimatedBuilder(
               animation: ThemeController.instance,
               builder: (_, _) => ListTile(
-                leading: const Icon(Icons.palette_outlined),
+                leading: _iconBadge(Icons.palette_outlined, AppColors.brand),
                 title: Text(l10n.appearance),
                 subtitle: Text(_modeLabel(ThemeController.instance.mode)),
                 onTap: () => _showThemePicker(context),
@@ -482,7 +421,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // 语言选择
           Card(
             child: ListTile(
-              leading: const Icon(Icons.language),
+              leading: _iconBadge(Icons.language, AppColors.brand),
               title: Text(l10n.language),
               subtitle: Text(_languageLabel()),
               onTap: _showLanguagePicker,
@@ -493,7 +432,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Card(
             child: Column(children: [
               ListTile(
-                leading: const Icon(Icons.track_changes_outlined),
+                leading: _iconBadge(Icons.track_changes_outlined, AppColors.teal),
                 title: Text(l10n.customizeTracking),
                 subtitle: Text(l10n.customizeTrackingSubtitle),
                 onTap: () async {
@@ -508,7 +447,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.auto_awesome),
+                leading: _iconBadge(Icons.auto_awesome, AppColors.amber),
                 title: Text(l10n.cyclePersonalization),
                 subtitle: Text(l10n.cyclePersonalizationSubtitle),
                 onTap: () {
@@ -522,7 +461,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.upload_file_outlined),
+              leading: _iconBadge(Icons.upload_file_outlined, AppColors.teal),
               title: Text(l10n.importData),
               subtitle: Text(l10n.importDataSubtitle),
               onTap: _import,
@@ -536,7 +475,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 builder: (ctx, innerSet) {
                   final ctrl = AutoBackupController.instance;
                   return SwitchListTile.adaptive(
-                    secondary: const Icon(Icons.cloud_done_outlined),
+                    secondary: _iconBadge(Icons.cloud_done_outlined, AppColors.teal),
                     title: Text(l10n.autoBackup),
                     subtitle: Text(l10n.autoBackupSubtitle),
                     value: ctrl.enabled,
@@ -554,7 +493,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.folder_open_outlined),
+                leading: _iconBadge(Icons.folder_open_outlined, AppColors.amber),
                 title: Text(l10n.backupDir),
                 subtitle: Text(
                   AutoBackupController.instance.dirDisplay ??
@@ -569,7 +508,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const Divider(height: 1),
               ListTile(
-                leading: const Icon(Icons.refresh),
+                leading: _iconBadge(Icons.refresh, AppColors.brand),
                 title: Text(l10n.backupNow),
                 onTap: () => _backupNow(),
               ),
@@ -579,15 +518,15 @@ class _SettingsPageState extends State<SettingsPage> {
           Card(
             child: Column(children: [
               ListTile(
-                leading: const Icon(Icons.download_outlined),
+                leading: _iconBadge(Icons.download_outlined, AppColors.brand),
                 title: Text(l10n.exportJson),
                 subtitle: Text(l10n.exportJsonSubtitle),
                 onTap: _exportJson,
               ),
               const Divider(height: 1),
               ListTile(
-                leading: Icon(Icons.delete_forever_outlined,
-                    color: t.colorScheme.error),
+                leading: _iconBadge(
+                    Icons.delete_forever_outlined, t.colorScheme.error),
                 title: Text(l10n.clearAllData,
                     style: TextStyle(color: t.colorScheme.error)),
                 onTap: _clearAll,
@@ -597,7 +536,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.privacy_tip_outlined),
+              leading: _iconBadge(Icons.privacy_tip_outlined, AppColors.brand),
               title: Text(l10n.privacyPolicy),
               subtitle: Text(l10n.privacyPolicySubtitle),
               onTap: () => Navigator.of(context).push(

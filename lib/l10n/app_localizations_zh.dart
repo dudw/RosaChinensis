@@ -460,24 +460,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get importFromFile => '选择文件导入';
-
-  @override
-  String get importFromFileSubtitle => '选择本地 .json 导出文件';
-
-  @override
-  String get pasteJson => '粘贴 JSON';
-
-  @override
-  String get pasteJsonSubtitle => '从剪贴板或手动粘贴';
-
-  @override
   String importFailed(String error) {
     return '导入失败：$error';
   }
 
   @override
-  String get importErrorJsonParse => 'JSON 解析失败，请粘贴正确的导出文件';
+  String get importErrorJsonParse => 'JSON 解析失败，请选择正确的导出文件';
 
   @override
   String get importErrorInvalidJson => 'JSON 格式不正确';
@@ -492,12 +480,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get importErrorInvalidDate => '日期字段无法解析';
-
-  @override
-  String get importDedupeHint => '按唯一键合并去重，已存在的记录不会被覆盖。';
-
-  @override
-  String get pasteJsonHint => '粘贴 JSON…';
 
   @override
   String get importDone => '导入完成';

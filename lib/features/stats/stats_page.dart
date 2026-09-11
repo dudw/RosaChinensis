@@ -235,12 +235,12 @@ class _OverviewGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final items = [
-      (l10n.trackedDays, summary.trackedDays),
-      (l10n.periodDays, summary.periodDays),
-      (l10n.symptomDays, summary.symptomDays),
-      (l10n.moodDays, summary.moodDays),
-      (l10n.sexDays, summary.sexDays),
-      (l10n.metricDays, summary.metricDays),
+      (l10n.trackedDays, summary.trackedDays, AppColors.brand),
+      (l10n.periodDays, summary.periodDays, AppColors.danger),
+      (l10n.symptomDays, summary.symptomDays, AppColors.amber),
+      (l10n.moodDays, summary.moodDays, AppColors.teal),
+      (l10n.sexDays, summary.sexDays, AppColors.teal),
+      (l10n.metricDays, summary.metricDays, AppColors.brand),
     ];
     return GridView.count(
       shrinkWrap: true,
@@ -250,8 +250,8 @@ class _OverviewGrid extends StatelessWidget {
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       children: [
-        for (final (label, value) in items)
-          _OverviewCell(label: label, value: value, unit: unit),
+        for (final (label, value, color) in items)
+          _OverviewCell(label: label, value: value, unit: unit, color: color),
       ],
     );
   }
@@ -262,37 +262,56 @@ class _OverviewCell extends StatelessWidget {
     required this.label,
     required this.value,
     required this.unit,
+    required this.color,
   });
   final String label;
   final int value;
   final String unit;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(label,
-                style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
-            const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    final t = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: t.cardTheme.color,
+        borderRadius: BorderRadius.circular(AppRadius.l),
+        border: Border.all(
+          color: t.brightness == Brightness.dark
+              ? Colors.white12
+              : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(height: 4, color: color),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('$value',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(width: 4),
-                Text(unit, style: Theme.of(context).textTheme.bodySmall),
+                Text(label,
+                    style: t.textTheme.bodySmall, maxLines: 1),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('$value',
+                        style: t.textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 4),
+                    Text(unit, style: t.textTheme.bodySmall),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -518,12 +537,32 @@ class _LinePainter extends CustomPainter {
         path.lineTo(x, y);
       }
     }
+
+    // 渐变填充区（折线下方 → 透明）
+    final fillPath = Path()..addPath(path, Offset.zero);
+    fillPath.lineTo(size.width, size.height);
+    fillPath.lineTo(0, size.height);
+    fillPath.close();
+    final fillPaint = Paint()
+      ..shader = AppGradients.chartFill(color)
+          .createShader(Offset.zero & size)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(fillPath, fillPaint);
+
     canvas.drawPath(path, linePaint);
 
     // 数据点
     final dotPaint = Paint()..color = color;
     for (var i = 0; i < points.length; i++) {
       final c = Offset(i * dx, yOf(points[i].value));
+      // 柔光外圈
+      canvas.drawCircle(
+        c,
+        5,
+        Paint()
+          ..color = color.withValues(alpha: 0.25)
+          ..style = PaintingStyle.fill,
+      );
       canvas.drawCircle(c, 3, dotPaint);
       canvas.drawCircle(c, 3, Paint()..color = Colors.white..style = PaintingStyle.stroke);
     }
@@ -566,10 +605,12 @@ class _TrendBars extends StatelessWidget {
                             ? 4
                             : 8 + 80 * lengths[i] / max,
                         decoration: BoxDecoration(
-                          color: i == lengths.length - 1
-                              ? scheme.primary
-                              : scheme.primary.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(4),
+                          gradient: AppGradients.barVertical(
+                            i == lengths.length - 1
+                                ? scheme.primary
+                                : scheme.primary.withValues(alpha: 0.4),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),

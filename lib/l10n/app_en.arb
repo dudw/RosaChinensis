@@ -196,15 +196,11 @@
   "@exportShareText": {
     "placeholders": { "label": { "type": "String" } }
   },
-  "importFromFile": "Import from file",
-  "importFromFileSubtitle": "Choose a local .json export file",
-  "pasteJson": "Paste JSON",
-  "pasteJsonSubtitle": "From clipboard or manual paste",
   "importFailed": "Import failed: {error}",
   "@importFailed": {
     "placeholders": { "error": { "type": "String" } }
   },
-  "importErrorJsonParse": "JSON parse failed. Paste a valid export file.",
+  "importErrorJsonParse": "JSON parse failed. Select a valid export file.",
   "importErrorInvalidJson": "Invalid JSON format.",
   "importErrorSchemaMismatch": "Schema version mismatch: import is {imported}, current is {current}",
   "@importErrorSchemaMismatch": {
@@ -215,8 +211,6 @@
   },
   "importErrorMissingData": "Missing data root node.",
   "importErrorInvalidDate": "Unparseable date field.",
-  "importDedupeHint": "Merged by unique key; existing records are not overwritten.",
-  "pasteJsonHint": "Paste JSON…",
   "importDone": "Import complete",
   "importSummary": "{inserted} added · {skipped} skipped",
   "@importSummary": {
