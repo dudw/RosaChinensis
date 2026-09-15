@@ -40,6 +40,22 @@
   "predictedChip": "Predicted",
   "confirmedChip": "Confirmed",
 
+  "phaseDescPeriod": "Period · Day {n}. The uterine lining sheds and bleeds; rest and keep warm.",
+  "@phaseDescPeriod": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "phaseDescPredictedPeriod": "Predicted period day: when your next period is expected to start; the date may shift slightly.",
+  "phaseDescOvulation": "Predicted ovulation day: the most fertile day and the center of your fertile window.",
+  "phaseDescNormal": "Regular day: {n} days until your next period; a stable phase of the cycle.",
+  "@phaseDescNormal": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "phaseDescFertileWindowToday": "Fertile window: higher chance of conception, ovulation expected today.",
+  "phaseDescFertileWindowInDays": "Fertile window: higher chance of conception, ovulation expected in {n} days.",
+  "@phaseDescFertileWindowInDays": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+
   "predictedPeriodSubtitle": "±{n} days from last prediction (predicted)",
   "@predictedPeriodSubtitle": {
     "placeholders": { "n": { "type": "int" } }

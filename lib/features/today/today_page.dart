@@ -24,7 +24,10 @@ class TodayPage extends StatefulWidget {
 
 class _TodayPageState extends State<TodayPage> {
   late Future<_TodayState> _state;
-  bool _showFertile = false;
+
+  /// 当前选中的圆环锚点（null = 今日态）。提升到页面层，
+  /// 使圆环下方的说明区域能跟随选中日期显示对应说明。
+  _DayAnchor? _selected;
 
   @override
   void initState() {
@@ -96,7 +99,6 @@ class _TodayPageState extends State<TodayPage> {
   void _refresh() {
     setState(() {
       _state = _load();
-      _showFertile = false;
     });
   }
 
@@ -132,9 +134,9 @@ class _TodayPageState extends State<TodayPage> {
                     cycleLength: s.cycleLength,
                     periodLength: s.periodLength,
                     showFertileIndicator: s.showFertile || s.showOvulation,
-                    onToggleExpand: () =>
-                        setState(() => _showFertile = !_showFertile),
-                    expanded: _showFertile,
+                    selected: _selected,
+                    onSelectedChanged: (a) =>
+                        setState(() => _selected = a),
                   )),
                   const SizedBox(height: 28),
                   FilledButton.tonalIcon(
@@ -152,14 +154,15 @@ class _TodayPageState extends State<TodayPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // 仅当圆环上的箭头被点开时，才展示受孕期详细卡片。
-                  if (_showFertile && (s.showFertile || s.showOvulation))
-                    _FertileInfo(
+                  // 选中某天时：在按钮下方显示该天的阶段说明；未选中显示今日阶段提示
+                  if (_selected != null)
+                    _SelectedDayCard(
                       info: s.info,
-                      showFertile: s.showFertile,
-                      showOvulation: s.showOvulation,
-                    ),
-                  if (s.info.phase != TodayPhase.period)
+                      anchor: _selected!,
+                      cycleLength: s.cycleLength,
+                      onBack: () => setState(() => _selected = null),
+                    )
+                  else if (s.info.phase != TodayPhase.period)
                     _PhaseHint(info: s.info),
                 ],
               ),
@@ -224,8 +227,8 @@ class _Ring extends StatefulWidget {
     required this.cycleLength,
     required this.periodLength,
     required this.showFertileIndicator,
-    required this.onToggleExpand,
-    required this.expanded,
+    required this.selected,
+    required this.onSelectedChanged,
   });
 
   final TodayInfo info;
@@ -241,16 +244,20 @@ class _Ring extends StatefulWidget {
   final int periodLength;
 
   final bool showFertileIndicator;
-  final VoidCallback onToggleExpand;
-  final bool expanded;
+
+  /// 当前选中的锚点（null = 今日态），由页面层持有（受控组件）。
+  final _DayAnchor? selected;
+
+  /// 选中变化回调（null = 回到今日态）。
+  final ValueChanged<_DayAnchor?> onSelectedChanged;
 
   @override
   State<_Ring> createState() => _RingState();
 }
 
 class _RingState extends State<_Ring> {
-  /// 当前选中的锚点（null = 今日态）。
-  _DayAnchor? _selected;
+  /// 当前选中的锚点（null = 今日态），由页面层持有。
+  _DayAnchor? get _selected => widget.selected;
 
   @override
   Widget build(BuildContext context) {
@@ -435,38 +442,8 @@ class _RingState extends State<_Ring> {
                     ),
                   ],
                   const SizedBox(height: 6),
-                  // "可能的受孕日"入口只在今日处于易孕期时出现
-                  if (widget.showFertileIndicator &&
-                      isDisplayingToday &&
-                      info.phase == TodayPhase.fertileWindow)
-                    GestureDetector(
-                      onTap: widget.onToggleExpand,
-                      behavior: HitTestBehavior.opaque,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            l10n.possibleFertileDays,
-                            style: t.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.teal,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Icon(
-                            widget.expanded
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                            size: 20,
-                            color: AppColors.teal,
-                          ),
-                        ],
-                      ),
-                    ),
-                  // 其他情况（关闭了受孕期显示 或 今日不在易孕期）显示阶段标签
-                  if (isDisplayingToday &&
-                      !(widget.showFertileIndicator &&
-                          info.phase == TodayPhase.fertileWindow))
-                    _PhaseChip(info: info),
+                  // 今日始终显示阶段标签；其他日期提示返回今日
+                  if (isDisplayingToday) _PhaseChip(info: info),
                   if (!isDisplayingToday)
                     Text(
                       l10n.backToTodayHint,
@@ -527,7 +504,7 @@ class _RingState extends State<_Ring> {
                     // 只响应圆环带内的点击（0.25r ~ 0.70r）
                     if (distToCenter < size * 0.25 ||
                         distToCenter > size * 0.70) {
-                      setState(() => _selected = null);
+                      widget.onSelectedChanged(null);
                       return;
                     }
 
@@ -559,12 +536,12 @@ class _RingState extends State<_Ring> {
                     const hitThreshold = 22.0; // px（每天一个锚点，间距约 40px 弧长）
                     if (best != null && bestDist < hitThreshold) {
                       if (cycle.dateOnly(best.date) == now) {
-                        setState(() => _selected = null);
+                        widget.onSelectedChanged(null);
                       } else {
-                        setState(() => _selected = best);
+                        widget.onSelectedChanged(best);
                       }
                     } else {
-                      setState(() => _selected = null);
+                      widget.onSelectedChanged(null);
                     }
                   },
                 ),
@@ -971,6 +948,108 @@ class _PhaseHint extends StatelessWidget {
   }
 }
 
+/// 选中某天时，显示在圆环下方（按钮之下）的阶段说明卡片。
+/// 与截图风格一致：阶段色文字 + 多行解释说明，附「回到今日」入口。
+class _SelectedDayCard extends StatelessWidget {
+  const _SelectedDayCard({
+    required this.info,
+    required this.anchor,
+    required this.cycleLength,
+    required this.onBack,
+  });
+
+  final TodayInfo info;
+  final _DayAnchor anchor;
+  final int cycleLength;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final color = _phaseColor(anchor.phase);
+    final df = DateFormat.MMMd(dateLocale(context));
+    final dayN = (anchor.ratio * cycleLength + 1).round();
+    final description = _phaseDescription(
+      l10n,
+      info,
+      anchor.phase,
+      anchor.date,
+      dayN,
+    );
+    final bgAlpha = t.brightness == Brightness.dark ? 0.2 : 0.08;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: bgAlpha),
+        borderRadius: BorderRadius.circular(AppRadius.l),
+        border: Border.all(
+          color: color.withValues(
+            alpha: t.brightness == Brightness.dark ? 0.35 : 0.18,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _phaseIcon(anchor.phase),
+                color: color,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  df.format(anchor.date),
+                  style: t.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: onBack,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Text(
+                    l10n.backToTodayHint,
+                    style: t.textTheme.labelSmall?.copyWith(
+                      color: t.colorScheme.outline,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            description,
+            style: t.textTheme.bodyMedium?.copyWith(
+              color: color,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+IconData _phaseIcon(TodayPhase phase) => switch (phase) {
+  TodayPhase.period => Icons.water_drop,
+  TodayPhase.predictedPeriod => Icons.event_available,
+  TodayPhase.ovulation => Icons.brightness_5,
+  TodayPhase.fertileWindow => Icons.auto_awesome,
+  TodayPhase.normal => Icons.calendar_today,
+};
+
 Color _phaseColor(TodayPhase phase) => switch (phase) {
   TodayPhase.period => AppColors.danger,
   TodayPhase.predictedPeriod => AppColors.danger.withValues(alpha: 0.7),
@@ -981,119 +1060,30 @@ Color _phaseColor(TodayPhase phase) => switch (phase) {
   TodayPhase.normal => const Color(0xFFBDBDBD),
 };
 
-/// 受孕期详情卡片。
-/// 根据用户设置显示 / 隐藏排卵日与受孕期。
-class _FertileInfo extends StatelessWidget {
-  const _FertileInfo({
-    required this.info,
-    required this.showFertile,
-    required this.showOvulation,
-  });
-
-  final TodayInfo info;
-  final bool showFertile;
-  final bool showOvulation;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    final df = DateFormat.MMMd(dateLocale(context));
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.teal.withValues(
-            alpha: t.brightness == Brightness.dark ? 0.18 : 0.10,
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.l),
-          border: Border.all(
-            color: AppColors.teal.withValues(
-              alpha: t.brightness == Brightness.dark ? 0.35 : 0.18,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.auto_awesome,
-                  color: AppColors.teal,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.possibleFertileDays,
-                  style: t.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.teal,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (showFertile) ...[
-              _InfoRow(
-                label: l10n.fertileWindowLabel,
-                value:
-                    '${df.format(info.fertileStart)} – ${df.format(info.fertileEnd)}',
-                color: AppColors.teal,
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (showOvulation) ...[
-              _InfoRow(
-                label: l10n.predictedOvulationLabel,
-                value: df.format(info.ovulation),
-                color: AppColors.amber,
-              ),
-              const SizedBox(height: 8),
-            ],
-            Text(
-              l10n.fertileDisclaimer,
-              style: t.textTheme.bodySmall?.copyWith(
-                color: t.colorScheme.outline,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context);
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Text(label, style: t.textTheme.bodyMedium),
-        const Spacer(),
-        Text(
-          value,
-          style: t.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
-    );
+/// 点击某天时，该天阶段标题下方显示的说明文字。
+/// 普通日返回灰色占位说明；受孕日按距排卵天数分「今天/还有 n 天」。
+String _phaseDescription(
+  AppLocalizations l10n,
+  TodayInfo info,
+  TodayPhase phase,
+  DateTime displayDate,
+  int dayN,
+) {
+  switch (phase) {
+    case TodayPhase.period:
+      return l10n.phaseDescPeriod(dayN);
+    case TodayPhase.predictedPeriod:
+      return l10n.phaseDescPredictedPeriod;
+    case TodayPhase.ovulation:
+      return l10n.phaseDescOvulation;
+    case TodayPhase.fertileWindow:
+      final daysToOvulation = info.ovulation.difference(displayDate).inDays;
+      return daysToOvulation <= 0
+          ? l10n.phaseDescFertileWindowToday
+          : l10n.phaseDescFertileWindowInDays(daysToOvulation);
+    case TodayPhase.normal:
+      final daysToNext =
+          info.nextPeriodStart.difference(displayDate).inDays;
+      return l10n.phaseDescNormal(daysToNext < 0 ? 0 : daysToNext);
   }
 }

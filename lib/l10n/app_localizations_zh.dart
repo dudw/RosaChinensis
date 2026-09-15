@@ -99,6 +99,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get confirmedChip => '已确认';
 
   @override
+  String phaseDescPeriod(int n) {
+    return '行经期 · 第 $n 天。子宫内膜脱落出血，建议注意休息与保暖。';
+  }
+
+  @override
+  String get phaseDescPredictedPeriod => '预测经期日：预计下次月经开始的时间，日期可能略有波动。';
+
+  @override
+  String get phaseDescOvulation => '预测排卵日：排卵期受孕几率最高，是受孕窗口的中心日。';
+
+  @override
+  String phaseDescNormal(int n) {
+    return '普通日：距离下次经期还有 $n 天，处于周期中相对平稳的阶段。';
+  }
+
+  @override
+  String get phaseDescFertileWindowToday => '易孕期：受孕几率较高，预计排卵就在今天。';
+
+  @override
+  String phaseDescFertileWindowInDays(int n) {
+    return '易孕期：受孕几率较高，预计排卵还有 $n 天。';
+  }
+
+  @override
   String predictedPeriodSubtitle(int n) {
     return '距上次预测区间 ±$n 天（预测态）';
   }

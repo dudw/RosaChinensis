@@ -266,6 +266,42 @@ abstract class AppLocalizations {
   /// **'Confirmed'**
   String get confirmedChip;
 
+  /// No description provided for @phaseDescPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period · Day {n}. The uterine lining sheds and bleeds; rest and keep warm.'**
+  String phaseDescPeriod(int n);
+
+  /// No description provided for @phaseDescPredictedPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Predicted period day: when your next period is expected to start; the date may shift slightly.'**
+  String get phaseDescPredictedPeriod;
+
+  /// No description provided for @phaseDescOvulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Predicted ovulation day: the most fertile day and the center of your fertile window.'**
+  String get phaseDescOvulation;
+
+  /// No description provided for @phaseDescNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular day: {n} days until your next period; a stable phase of the cycle.'**
+  String phaseDescNormal(int n);
+
+  /// No description provided for @phaseDescFertileWindowToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertile window: higher chance of conception, ovulation expected today.'**
+  String get phaseDescFertileWindowToday;
+
+  /// No description provided for @phaseDescFertileWindowInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertile window: higher chance of conception, ovulation expected in {n} days.'**
+  String phaseDescFertileWindowInDays(int n);
+
   /// No description provided for @predictedPeriodSubtitle.
   ///
   /// In en, this message translates to:

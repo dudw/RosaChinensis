@@ -105,6 +105,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmedChip => 'Confirmed';
 
   @override
+  String phaseDescPeriod(int n) {
+    return 'Period · Day $n. The uterine lining sheds and bleeds; rest and keep warm.';
+  }
+
+  @override
+  String get phaseDescPredictedPeriod =>
+      'Predicted period day: when your next period is expected to start; the date may shift slightly.';
+
+  @override
+  String get phaseDescOvulation =>
+      'Predicted ovulation day: the most fertile day and the center of your fertile window.';
+
+  @override
+  String phaseDescNormal(int n) {
+    return 'Regular day: $n days until your next period; a stable phase of the cycle.';
+  }
+
+  @override
+  String get phaseDescFertileWindowToday =>
+      'Fertile window: higher chance of conception, ovulation expected today.';
+
+  @override
+  String phaseDescFertileWindowInDays(int n) {
+    return 'Fertile window: higher chance of conception, ovulation expected in $n days.';
+  }
+
+  @override
   String predictedPeriodSubtitle(int n) {
     return '±$n days from last prediction (predicted)';
   }
