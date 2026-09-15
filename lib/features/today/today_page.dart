@@ -718,15 +718,20 @@ class _RingPainter extends CustomPainter {
 
     // 1.5) 经期弧段（danger 渐变红，固定位置 0 ~ periodRatio）
     if (periodRatio > 0) {
+      // 圆头会在弧段两端各向外延伸半个线宽（约一个锚点间距），
+      // 末端会盖住下一天、始端会盖住上一天的锚点；
+      // 两端各收回一个圆头弧度，让圆头外缘正好落在原区间端点，不再越界。
+      final capAngle = (stroke / 2) / (ring.width / 2);
+      final sweep = math.max(0.0, periodRatio * 2 * math.pi - 2 * capAngle);
       final periodPaint = Paint()
         ..shader = AppGradients.period.createShader(ring)
         ..strokeWidth = stroke
         ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.butt;
+        ..strokeCap = StrokeCap.round;
       canvas.drawArc(
         ring,
-        startAngle,
-        periodRatio * 2 * math.pi,
+        startAngle + capAngle,
+        sweep,
         false,
         periodPaint,
       );

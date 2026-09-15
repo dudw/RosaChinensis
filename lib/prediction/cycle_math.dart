@@ -95,7 +95,7 @@ CyclePrediction computePrediction({
     rangeDays = 3; // 少量数据更宽
   } else {
     mean = weightedMeanCycleLength(lengths);
-    rangeDays = lengths.length >= 10 ? 2 : 2; // >=10 按 PRD 收窄至 ±2
+    rangeDays = 2; // PRD 21.3：n>=3 为 ±2
   }
 
   final nextPeriod =

@@ -4,7 +4,7 @@
 
 > 核心定位：面向女性用户的经期记录 + 智能预测工具 —— 科学记录、隐私第一。
 
-- 当前版本：`1.0.3+4`
+- 当前版本：`1.0.4+5`
 - 数据全程仅存本地 SQLite，无云端上传、无第三方追踪
 
 ## 功能特性
@@ -114,7 +114,7 @@ flutter build apk --release --split-per-abi --target-platform=android-arm,androi
 **CI 自动发布**：推送形如 `v*` 的 tag 会触发 [release.yml](.github/workflows/release.yml)，自动构建 armv7 / armv8 两个 APK 并创建 GitHub Release。
 
 ```bash
-git tag -a v1.0.3 -m "release: 1.0.3"
+git tag -a v1.0.4 -m "release: 1.0.4"
 git push origin main --follow-tags
 ```
 

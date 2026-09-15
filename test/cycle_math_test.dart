@@ -54,6 +54,21 @@ void main() {
       expect(p.usedCycles, 1);
     });
 
+    test('n>=3 置信区间收窄为 ±2', () {
+      final starts = [
+        DateTime(2026, 1, 1),
+        DateTime(2026, 1, 30), // 29
+        DateTime(2026, 2, 28), // 29
+        DateTime(2026, 3, 29), // 29
+      ];
+      final p = computePrediction(
+        periodStarts: starts,
+        latestPeriodStart: DateTime(2026, 3, 29),
+      );
+      expect(p.usedCycles, 3);
+      expect(p.confidenceRangeDays, 2);
+    });
+
     test('无历史直接以期望周期估测', () {
       final p = computePrediction(
         periodStarts: [],
