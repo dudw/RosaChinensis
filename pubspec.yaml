@@ -67,6 +67,13 @@ dev_dependencies:
   drift_dev: ^2.20.3
   build_runner: ^2.4.13
 
+# 依赖版本覆盖：锁定 objective_c 到 9.6.0。
+# object_c 9.6.1 起在其 native-assets hook 中引用 Architecture.arm64e，
+# 需要更新的 Dart 工具链才支持；为避免 CI 解析漂移导致构建失败，固定到
+# flutter_secure_storage_darwin（^9.2.1）约束内已验证可编译的版本。
+dependency_overrides:
+  objective_c: 9.6.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
