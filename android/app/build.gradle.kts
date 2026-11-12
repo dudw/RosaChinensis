@@ -15,7 +15,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.period.period_tracker"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage 11 要求 compileSdk 37，高于 Flutter 3.50 的默认值 36。
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

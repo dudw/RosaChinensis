@@ -4,7 +4,7 @@
 
 > 核心定位：面向女性用户的经期记录 + 智能预测工具 —— 科学记录、隐私第一。
 
-- 当前版本：`1.0.5+6`
+- 当前版本：`1.0.6+7`
 - 数据全程仅存本地 SQLite，无云端上传、无第三方追踪
 
 ## 功能特性
@@ -82,14 +82,14 @@ drift 表（`schemaVersion` 见 [app_database.dart](lib/core/db/app_database.dar
 
 ## 快速开始
 
-前置要求：安装 [Flutter SDK](https://docs.flutter.dev/get-started/install)（3.47.2，含 Dart SDK `^3.12.1`）。
+前置要求：安装 [Flutter SDK](https://docs.flutter.dev/get-started/install)（3.47+，含 Dart SDK `^3.13.0`）。
 
 ```bash
 # 1. 安装依赖
 flutter pub get
 
 # 2. 生成 drift / l10n 代码（表结构或 arb 变更后需重跑）
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter gen-l10n
 
 # 3. 运行（选择目标设备）
@@ -114,7 +114,7 @@ flutter build apk --release --split-per-abi --target-platform=android-arm,androi
 **CI 自动发布**：推送形如 `v*` 的 tag 会触发 [release.yml](.github/workflows/release.yml)，自动构建 armv7 / armv8 两个 APK 并创建 GitHub Release。
 
 ```bash
-git tag -a v1.0.5 -m "release: 1.0.5"
+git tag -a v1.0.6 -m "release: 1.0.6"
 git push origin main --follow-tags
 ```
 

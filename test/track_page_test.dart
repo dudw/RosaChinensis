@@ -3,7 +3,7 @@
 // ListView 中，导致第一张卡片被撑成无限高、后续卡片全部不渲染
 // （用户启用了 4 个类别却只看到 1 张卡）。此测试固定该场景防止回归。
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

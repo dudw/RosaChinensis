@@ -12,6 +12,9 @@ analyzer:
     - build/**
     - android/**
     - ios/**
+    # gen-l10n 生成的本地化代码，Flutter 3.50 模板仍引用已废弃的框架内设计库，
+    # 运行时 delegates 由 lib/app.dart 显式指定，此处不做静态检查。
+    - lib/l10n/app_localizations*.dart
 include: package:flutter_lints/flutter.yaml
 
 linter:

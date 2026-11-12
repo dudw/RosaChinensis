@@ -2711,24 +2711,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
 }
 
-typedef $$UsersTableCreateCompanionBuilder =
-    UsersCompanion Function({
-      Value<int> id,
-      Value<String> localId,
-      Value<int> expectCycleLength,
-      Value<int> expectPeriodLength,
-      Value<DateTime?> lastPeriodStart,
-      Value<DateTime> createdAt,
-    });
-typedef $$UsersTableUpdateCompanionBuilder =
-    UsersCompanion Function({
-      Value<int> id,
-      Value<String> localId,
-      Value<int> expectCycleLength,
-      Value<int> expectPeriodLength,
-      Value<DateTime?> lastPeriodStart,
-      Value<DateTime> createdAt,
-    });
+typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
+  Value<int> id,
+  Value<String> localId,
+  Value<int> expectCycleLength,
+  Value<int> expectPeriodLength,
+  Value<DateTime?> lastPeriodStart,
+  Value<DateTime> createdAt,
+});
+typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
+  Value<int> id,
+  Value<String> localId,
+  Value<int> expectCycleLength,
+  Value<int> expectPeriodLength,
+  Value<DateTime?> lastPeriodStart,
+  Value<DateTime> createdAt,
+});
 
 final class $$UsersTableReferences
     extends BaseReferences<_$AppDatabase, $UsersTable, UserRow> {
@@ -3359,10 +3357,11 @@ class $$UsersTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (periodDaysRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          PeriodDay
+                          PeriodDay,
+                          $PeriodDaysTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3373,17 +3372,16 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).periodDaysRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                       if (symptomRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          SymptomRecord
+                          SymptomRecord,
+                          $SymptomRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3394,17 +3392,16 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).symptomRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                       if (bodyMetricsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          BodyMetric
+                          BodyMetric,
+                          $BodyMetricsTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3415,17 +3412,16 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).bodyMetricsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                       if (moodRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          MoodRecord
+                          MoodRecord,
+                          $MoodRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3436,17 +3432,16 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).moodRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                       if (sexRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          SexRecord
+                          SexRecord,
+                          $SexRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3457,17 +3452,16 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).sexRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                       if (predictionSnapshotsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           UserRow,
                           $UsersTable,
-                          PredictionSnapshot
+                          PredictionSnapshot,
+                          $PredictionSnapshotsTable
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
@@ -3478,10 +3472,8 @@ class $$UsersTableTableManager
                                 table,
                                 p0,
                               ).predictionSnapshotsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.userId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'user_id',
                           typedResults: items,
                         ),
                     ];
@@ -3513,24 +3505,22 @@ typedef $$UsersTableProcessedTableManager =
         bool predictionSnapshotsRefs,
       })
     >;
-typedef $$PeriodDaysTableCreateCompanionBuilder =
-    PeriodDaysCompanion Function({
-      Value<int> id,
-      required int userId,
-      required DateTime date,
-      Value<bool> isPeriod,
-      Value<int?> flowLevel,
-      Value<String?> note,
-    });
-typedef $$PeriodDaysTableUpdateCompanionBuilder =
-    PeriodDaysCompanion Function({
-      Value<int> id,
-      Value<int> userId,
-      Value<DateTime> date,
-      Value<bool> isPeriod,
-      Value<int?> flowLevel,
-      Value<String?> note,
-    });
+typedef $$PeriodDaysTableCreateCompanionBuilder = PeriodDaysCompanion Function({
+  Value<int> id,
+  required int userId,
+  required DateTime date,
+  Value<bool> isPeriod,
+  Value<int?> flowLevel,
+  Value<String?> note,
+});
+typedef $$PeriodDaysTableUpdateCompanionBuilder = PeriodDaysCompanion Function({
+  Value<int> id,
+  Value<int> userId,
+  Value<DateTime> date,
+  Value<bool> isPeriod,
+  Value<int?> flowLevel,
+  Value<String?> note,
+});
 
 final class $$PeriodDaysTableReferences
     extends BaseReferences<_$AppDatabase, $PeriodDaysTable, PeriodDay> {
@@ -3805,17 +3795,15 @@ class $$PeriodDaysTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$PeriodDaysTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn: $$PeriodDaysTableReferences
-                                    ._userIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$PeriodDaysTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$PeriodDaysTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -4124,18 +4112,15 @@ class $$SymptomRecordsTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$SymptomRecordsTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn:
-                                    $$SymptomRecordsTableReferences
-                                        ._userIdTable(db)
-                                        .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$SymptomRecordsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$SymptomRecordsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -4438,17 +4423,15 @@ class $$BodyMetricsTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$BodyMetricsTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn: $$BodyMetricsTableReferences
-                                    ._userIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$BodyMetricsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$BodyMetricsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -4749,17 +4732,15 @@ class $$MoodRecordsTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$MoodRecordsTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn: $$MoodRecordsTableReferences
-                                    ._userIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$MoodRecordsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$MoodRecordsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -4787,22 +4768,20 @@ typedef $$MoodRecordsTableProcessedTableManager =
       MoodRecord,
       PrefetchHooks Function({bool userId})
     >;
-typedef $$SexRecordsTableCreateCompanionBuilder =
-    SexRecordsCompanion Function({
-      Value<int> id,
-      required int userId,
-      required DateTime date,
-      required String tag,
-      Value<String?> note,
-    });
-typedef $$SexRecordsTableUpdateCompanionBuilder =
-    SexRecordsCompanion Function({
-      Value<int> id,
-      Value<int> userId,
-      Value<DateTime> date,
-      Value<String> tag,
-      Value<String?> note,
-    });
+typedef $$SexRecordsTableCreateCompanionBuilder = SexRecordsCompanion Function({
+  Value<int> id,
+  required int userId,
+  required DateTime date,
+  required String tag,
+  Value<String?> note,
+});
+typedef $$SexRecordsTableUpdateCompanionBuilder = SexRecordsCompanion Function({
+  Value<int> id,
+  Value<int> userId,
+  Value<DateTime> date,
+  Value<String> tag,
+  Value<String?> note,
+});
 
 final class $$SexRecordsTableReferences
     extends BaseReferences<_$AppDatabase, $SexRecordsTable, SexRecord> {
@@ -5060,17 +5039,15 @@ class $$SexRecordsTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$SexRecordsTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn: $$SexRecordsTableReferences
-                                    ._userIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$SexRecordsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$SexRecordsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -5417,19 +5394,15 @@ class $$PredictionSnapshotsTableTableManager
                     >
                   >(state) {
                     if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable:
-                                    $$PredictionSnapshotsTableReferences
-                                        ._userIdTable(db),
-                                referencedColumn:
-                                    $$PredictionSnapshotsTableReferences
-                                        ._userIdTable(db)
-                                        .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.userId,
+                        referencedTable: $$PredictionSnapshotsTableReferences
+                            ._userIdTable(db),
+                        referencedColumn: $$PredictionSnapshotsTableReferences
+                            ._userIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;

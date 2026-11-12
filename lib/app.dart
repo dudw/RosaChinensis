@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import 'core/i18n/locale_controller.dart';
@@ -58,7 +58,10 @@ class PeriodTrackerApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           themeMode: ThemeController.instance.mode,
           theme: AppTheme.light(),
           darkTheme: AppTheme.dark(),
